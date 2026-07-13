@@ -5,10 +5,7 @@ services:
   sead-p2p:
     image: ghcr.io/stardome-technology/stardome-sead-p2p:latest
     container_name: sead-p2p
-    ports:
-      - "8089:8089"
-      - "4001:4001"
-      - "4001:4001/udp"
+    network_mode: host
     env_file:
       - path: .env
         required: false
@@ -24,20 +21,13 @@ services:
     volumes:
       - p2p_data:/data
     healthcheck:
-      test: ["CMD-SHELL", 'port="${P2P_API_PORT:-8089}"; curl -sf "http://127.0.0.1:${port}/health" || exit 1']
+      test: ["CMD-SHELL", 'port="$${P2P_API_PORT:-8089}"; curl -sf "http://127.0.0.1:$${port}/health" || exit 1']
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 10s
-    networks:
-      - sead-network
     restart: unless-stopped
 
 volumes:
   p2p_data:
     name: p2p_data
-
-networks:
-  sead-network:
-    external: true
-    name: sead-network

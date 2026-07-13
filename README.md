@@ -39,24 +39,30 @@ Each p2p node:
 ### Quick start
 
 ```bash
-# Ensure sead-network exists (only needed if running standalone)
-docker network create sead-network 2>/dev/null || true
-
-# Pull and run
+# Pull and run (uses host networking — see note below)
+docker compose -f docker-compose.remote.yml pull
 docker compose -f docker-compose.remote.yml up -d
 
 # Verify
 curl http://localhost:8089/health
 ```
 
+> **Why host networking?** The container uses `network_mode: host` so that mDNS
+> multicast packets reach the physical LAN interface — enabling zero-config peer
+> discovery across machines without bootstrap configuration. The p2p sidecar is a
+> lightweight daemon with no secrets or TLS, making host networking a safe choice.
+> The container binds ports directly on the host's IPs; no `-p` port mapping is
+> needed.
+
 ### Multi-node setup
 
-On each node, the p2p service auto-discovers peers via mDNS on the same LAN.
-For nodes on different subnets, configure `P2P_BOOTSTRAP_PEERS` in `.env`:
+On the same LAN, mDNS auto-discovers all peers within seconds — no configuration
+needed. For nodes on different subnets (or WSL where mDNS multicast may not
+bridge through), configure a DHT bootstrap peer via `.env`:
 
 ```bash
-# On each node, create .env with the bootstrap peer address
-echo 'P2P_BOOTSTRAP_PEERS=/ip4/10.0.0.1/tcp/4001/p2p/12D3KooW...' >> .env
+# Create .env with any reachable peer as bootstrap
+echo 'P2P_BOOTSTRAP_PEERS=/ip4/192.168.0.102/tcp/4001/p2p/12D3KooW...' >> .env
 
 # Restart to pick up config
 docker compose -f docker-compose.remote.yml down
