@@ -1,0 +1,43 @@
+# Remote compose file — pulls pre-built image from ghcr.io.
+# Usage: docker compose -f docker-compose.remote.yml up -d
+
+services:
+  sead-p2p:
+    image: ghcr.io/stardome-technology/stardome-sead-p2p:latest
+    container_name: sead-p2p
+    ports:
+      - "8089:8089"
+      - "4001:4001"
+      - "4001:4001/udp"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - P2P_API_PORT=${P2P_API_PORT:-8089}
+      - P2P_LISTEN_ADDRS=${P2P_LISTEN_ADDRS:-/ip4/0.0.0.0/tcp/4001,/ip4/0.0.0.0/udp/4001/quic-v1}
+      - P2P_ENABLE_MDNS=${P2P_ENABLE_MDNS:-true}
+      - P2P_MDNS_SERVICE_TAG=${P2P_MDNS_SERVICE_TAG:-stardome-p2p-v1}
+      - P2P_ENABLE_DHT=${P2P_ENABLE_DHT:-true}
+      - P2P_DHT_NAMESPACE=${P2P_DHT_NAMESPACE:-/stardome-p2p/v1}
+      - P2P_BOOTSTRAP_PEERS=${P2P_BOOTSTRAP_PEERS:-}
+      - P2P_MAX_MESSAGE_SIZE=${P2P_MAX_MESSAGE_SIZE:-262144}
+    volumes:
+      - p2p_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", 'port="${P2P_API_PORT:-8089}"; curl -sf "http://127.0.0.1:${port}/health" || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - sead-network
+    restart: unless-stopped
+
+volumes:
+  p2p_data:
+    name: p2p_data
+
+networks:
+  sead-network:
+    external: true
+    name: sead-network
