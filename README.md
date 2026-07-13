@@ -43,6 +43,7 @@ Each p2p node:
 docker network create sead-network 2>/dev/null || true
 
 # Pull and run
+docker compose -f docker-compose.remote.yml pull
 docker compose -f docker-compose.remote.yml up -d
 
 # Verify
@@ -60,6 +61,8 @@ echo 'P2P_BOOTSTRAP_PEERS=/ip4/10.0.0.1/tcp/4001/p2p/12D3KooW...' >> .env
 
 # Restart to pick up config
 docker compose -f docker-compose.remote.yml down
+docker compose -f docker-compose.remote.yml pull
+
 docker compose -f docker-compose.remote.yml up -d
 ```
 
