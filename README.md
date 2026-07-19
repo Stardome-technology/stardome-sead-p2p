@@ -35,6 +35,7 @@ Each p2p node:
 
 - Docker + Docker Compose plugin
 - A running SEAD stack (see [stardome-sead](https://github.com/Stardome-technology/stardome-sead))
+- The p2p image is pre-built at `ghcr.io/stardome-technology/stardome-sead-p2p:latest` (multi-arch amd64 + arm64)
 
 ### Quick start
 
@@ -68,6 +69,18 @@ echo 'P2P_BOOTSTRAP_PEERS=/ip4/192.168.0.102/tcp/4001/p2p/12D3KooW...' >> .env
 docker compose -f docker-compose.remote.yml down
 docker compose -f docker-compose.remote.yml up -d
 ```
+
+### Mesh network (multi-subnet)
+
+When nodes span multiple subnets (e.g. LAN `192.168.0.x` + mesh `192.168.60.x`),
+configure bootstrap peers for **each subnet** so DHT can bridge across them:
+
+```bash
+P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/4001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/4001/p2p/<PEER_ID>
+```
+
+The p2pd listens on `0.0.0.0` so it binds to all interfaces automatically.
+mDNS handles LAN discovery; DHT bridges the mesh subnet.
 
 ## Configuration
 
@@ -116,3 +129,9 @@ curl -N http://localhost:8089/events/mytopic
 ## License
 
 See LICENSE file in the repository root.
+
+## Status
+
+✅ **Deployed and verified** on a 4-node mesh (2026-07-19) across LAN (`192.168.0.x`)
+and mesh wireless (`192.168.60.x`) subnets. All nodes connected with DHT active
+and pubsub propagation confirmed.
