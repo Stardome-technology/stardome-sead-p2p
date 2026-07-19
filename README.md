@@ -63,7 +63,8 @@ bridge through), configure a DHT bootstrap peer via `.env`:
 
 ```bash
 # Create .env with any reachable peer as bootstrap
-echo 'P2P_BOOTSTRAP_PEERS=/ip4/192.168.0.102/tcp/4001/p2p/12D3KooW...' >> .env
+# Get the peer ID from its /health endpoint first
+echo 'P2P_BOOTSTRAP_PEERS=/ip4/<IP>/tcp/4001/p2p/<PEER_ID>' >> .env
 
 # Restart to pick up config
 docker compose -f docker-compose.remote.yml down
@@ -72,15 +73,15 @@ docker compose -f docker-compose.remote.yml up -d
 
 ### Mesh network (multi-subnet)
 
-When nodes span multiple subnets (e.g. LAN `192.168.0.x` + mesh `192.168.60.x`),
-configure bootstrap peers for **each subnet** so DHT can bridge across them:
+When nodes span multiple subnets (e.g. LAN + wireless mesh), provide a bootstrap
+peer multiaddr for **each subnet** so DHT can bridge across them:
 
 ```bash
 P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/4001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/4001/p2p/<PEER_ID>
 ```
 
 The p2pd listens on `0.0.0.0` so it binds to all interfaces automatically.
-mDNS handles LAN discovery; DHT bridges the mesh subnet.
+mDNS handles same-subnet discovery; DHT bridges across subnets.
 
 ## Configuration
 
@@ -132,6 +133,5 @@ See LICENSE file in the repository root.
 
 ## Status
 
-✅ **Deployed and verified** on a 4-node mesh (2026-07-19) across LAN (`192.168.0.x`)
-and mesh wireless (`192.168.60.x`) subnets. All nodes connected with DHT active
-and pubsub propagation confirmed.
+✅ **Deployed and verified** on a 4-node mesh across LAN and wireless subnets.
+All nodes connected with DHT active and pubsub propagation confirmed.
