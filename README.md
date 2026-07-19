@@ -35,6 +35,7 @@ Each p2p node:
 
 - Docker + Docker Compose plugin
 - A running SEAD stack (see [stardome-sead](https://github.com/Stardome-technology/stardome-sead))
+- The p2p image is pre-built at `ghcr.io/stardome-technology/stardome-sead-p2p:latest` (multi-arch amd64 + arm64)
 
 ### Quick start
 
@@ -62,12 +63,25 @@ bridge through), configure a DHT bootstrap peer via `.env`:
 
 ```bash
 # Create .env with any reachable peer as bootstrap
-echo 'P2P_BOOTSTRAP_PEERS=/ip4/192.168.0.102/tcp/4001/p2p/12D3KooW...' >> .env
+# Get the peer ID from its /health endpoint first
+echo 'P2P_BOOTSTRAP_PEERS=/ip4/<IP>/tcp/4001/p2p/<PEER_ID>' >> .env
 
 # Restart to pick up config
 docker compose -f docker-compose.remote.yml down
 docker compose -f docker-compose.remote.yml up -d
 ```
+
+### Mesh network (multi-subnet)
+
+When nodes span multiple subnets (e.g. LAN + wireless mesh), provide a bootstrap
+peer multiaddr for **each subnet** so DHT can bridge across them:
+
+```bash
+P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/4001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/4001/p2p/<PEER_ID>
+```
+
+The p2pd listens on `0.0.0.0` so it binds to all interfaces automatically.
+mDNS handles same-subnet discovery; DHT bridges across subnets.
 
 ## Configuration
 
@@ -116,3 +130,8 @@ curl -N http://localhost:8089/events/mytopic
 ## License
 
 See LICENSE file in the repository root.
+
+## Status
+
+✅ **Deployed and verified** on a 4-node mesh across LAN and wireless subnets.
+All nodes connected with DHT active and pubsub propagation confirmed.
