@@ -4,7 +4,7 @@
 services:
   sead-p2p:
     image: ghcr.io/stardome-technology/stardome-sead-p2p:latest
-    container_name: sead-p2p
+    container_name: stardome-sead-p2p
     network_mode: host
     env_file:
       - path: .env
