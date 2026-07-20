@@ -61,9 +61,14 @@ On the same LAN, mDNS auto-discovers all peers within seconds — no configurati
 needed. For nodes on different subnets (or WSL where mDNS multicast may not
 bridge through), configure a DHT bootstrap peer via `.env`:
 
+> **⚠️ IMPORTANT:** `<IP>` and `<PEER_ID>` are **placeholders**. You must replace
+> them with real values. Copying them literally will crash the p2p service.
+> See [Mesh network](#mesh-network-multi-subnet) below for where to find each value.
+
 ```bash
 # Create .env with any reachable peer as bootstrap
 # Get the peer ID from its /health endpoint first
+# ⚠️ Replace <IP> and <PEER_ID> with actual values!
 echo 'P2P_BOOTSTRAP_PEERS=/ip4/<IP>/tcp/4001/p2p/<PEER_ID>' >> .env
 
 # Restart to pick up config
@@ -74,14 +79,62 @@ docker compose -f docker-compose.remote.yml up -d
 ### Mesh network (multi-subnet)
 
 When nodes span multiple subnets (e.g. LAN + wireless mesh), provide a bootstrap
-peer multiaddr for **each subnet** so DHT can bridge across them:
+peer multiaddr for **each subnet** so DHT can bridge across them. The p2pd listens
+on `0.0.0.0` so it binds to all interfaces automatically. mDNS handles same-subnet
+discovery; DHT bridges across subnets.
+
+> **⚠️ IMPORTANT:** The examples below use `<LAN_IP>`, `<MESH_IP>`, and `<PEER_ID>` as
+> **placeholders**. You must replace them with actual values. Copying them literally
+> will cause the p2p service to crash on startup.
+
+#### Where to find the values
+
+| Value | Where to get it |
+|-------|----------------|
+| **`<LAN_IP>`** | The node's IP on the wired LAN — e.g. `192.168.0.102`. Run `ip addr show` or `hostname -I` on the node. |
+| **`<MESH_IP>`** | The node's IP on the wireless mesh — e.g. `192.168.60.1`. Run `ip addr show bat0` on the node. |
+| **`<PEER_ID>`** | The p2p node's PeerId — a string like `12D3KooW...`. Get it from the `/health` endpoint of a *running* p2p node. |
+
+#### Chicken-and-egg: Getting the PeerId
+
+Since the p2p service must be running to report its PeerId, but a bad bootstrap
+config prevents it from starting, use this bootstrap procedure:
+
+1. **On one node only**, comment out or remove `P2P_BOOTSTRAP_PEERS` from `.env`
+   so the service starts without bootstrap peers:
+   ```bash
+   # .env — no bootstrap peers, just mDNS for now
+   # P2P_BOOTSTRAP_PEERS=/ip4/...  ← comment out or delete
+   ```
+2. Start the p2p service:
+   ```bash
+   docker compose -f docker-compose.remote.yml down
+   docker compose -f docker-compose.remote.yml up -d
+   ```
+3. Get its PeerId:
+   ```bash
+   curl http://localhost:8089/health
+   # → {"peer_id":"12D3KooW...","listen_addrs":["/ip4/192.168.0.102/tcp/4001",...],...}
+   ```
+4. Use that PeerId in the `.env` of **all other nodes** (substituting the actual
+   IPs of the bootstrap node):
+   ```bash
+   P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/4001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/4001/p2p/<PEER_ID>
+   ```
+5. Restart the bootstrap node with the same config so it connects back.
+
+#### Example: Real `.env` for the bootstrap node
+
+```bash
+# P2P_BOOTSTRAP_PEERS is empty on purpose — this node is the bootstrap seed
+# Other nodes will connect to it using its PeerId
+```
+
+#### Example: Real `.env` for all other nodes
 
 ```bash
 P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/4001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/4001/p2p/<PEER_ID>
 ```
-
-The p2pd listens on `0.0.0.0` so it binds to all interfaces automatically.
-mDNS handles same-subnet discovery; DHT bridges across subnets.
 
 ## Configuration
 
