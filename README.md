@@ -9,13 +9,13 @@ and subscribing to topics. Runs as a sidecar alongside each sead-service stack.
 ```mermaid
 graph LR
     subgraph "SEAD Node A"
-        SC_A[sead-core:8080]
-        P2P_A[p2pd:8089]
+        SC_A[sead-core:30080]
+        P2P_A[p2pd:30089]
     end
 
     subgraph "SEAD Node B"
-        SC_B[sead-core:8080]
-        P2P_B[p2pd:8089]
+        SC_B[sead-core:30080]
+        P2P_B[p2pd:30089]
     end
 
     P2P_A <-->|mDNS / DHT / gossipsub| P2P_B
@@ -113,13 +113,13 @@ config prevents it from starting, use this bootstrap procedure:
    ```
 3. Get its PeerId:
    ```bash
-   curl http://localhost:8089/health
-   # → {"peer_id":"12D3KooW...","listen_addrs":["/ip4/192.168.0.102/tcp/4001",...],...}
+   curl http://localhost:30089/health
+   # → {"peer_id":"12D3KooW...","listen_addrs":["/ip4/192.168.0.102/tcp/31001",...],...}
    ```
 4. Use that PeerId in the `.env` of **all other nodes** (substituting the actual
    IPs of the bootstrap node):
    ```bash
-   P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/4001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/4001/p2p/<PEER_ID>
+   P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/31001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/31001/p2p/<PEER_ID>
    ```
 5. Restart the bootstrap node with the same config so it connects back.
 
@@ -133,7 +133,7 @@ config prevents it from starting, use this bootstrap procedure:
 #### Example: Real `.env` for all other nodes
 
 ```bash
-P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/4001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/4001/p2p/<PEER_ID>
+P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/31001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/31001/p2p/<PEER_ID>
 ```
 
 ## Configuration
@@ -142,8 +142,8 @@ Create a `.env` file in this directory to override defaults:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `P2P_API_PORT` | `8089` | HTTP API port |
-| `P2P_LISTEN_ADDRS` | `/ip4/0.0.0.0/tcp/4001,/ip4/0.0.0.0/udp/4001/quic-v1` | libp2p listen multiaddrs |
+| `P2P_API_PORT` | `30089` | HTTP API port |
+| `P2P_LISTEN_ADDRS` | `/ip4/0.0.0.0/tcp/31001,/ip4/0.0.0.0/udp/31001/quic-v1` | libp2p listen multiaddrs |
 | `P2P_ENABLE_MDNS` | `true` | Enable mDNS peer discovery |
 | `P2P_MDNS_SERVICE_TAG` | `stardome-p2p-v1` | mDNS service tag |
 | `P2P_ENABLE_DHT` | `true` | Enable Kademlia DHT |
@@ -165,7 +165,7 @@ Create a `.env` file in this directory to override defaults:
 ### Example: Publish a message
 
 ```bash
-curl -X POST http://localhost:8089/events/mytopic \
+curl -X POST http://localhost:30089/events/mytopic \
   -H "Content-Type: application/json" \
   -d '{"data_hex": "aabbccdd"}'
 ```
@@ -173,7 +173,7 @@ curl -X POST http://localhost:8089/events/mytopic \
 ### Example: Subscribe via SSE
 
 ```bash
-curl -N http://localhost:8089/events/mytopic
+curl -N http://localhost:30089/events/mytopic
 # → event: connected
 # → data: {"topic": "mytopic"}
 # → data: {"data_hex":"aabbccdd","received_from":"12D3KooW...","topic":"mytopic"}
