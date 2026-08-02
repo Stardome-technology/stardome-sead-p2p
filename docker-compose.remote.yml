@@ -10,8 +10,8 @@ services:
       - path: .env
         required: false
     environment:
-      - P2P_API_PORT=${P2P_API_PORT:-8089}
-      - P2P_LISTEN_ADDRS=${P2P_LISTEN_ADDRS:-/ip4/0.0.0.0/tcp/4001,/ip4/0.0.0.0/udp/4001/quic-v1}
+      - P2P_API_PORT=${P2P_API_PORT:-30089}
+      - P2P_LISTEN_ADDRS=${P2P_LISTEN_ADDRS:-/ip4/0.0.0.0/tcp/31001,/ip4/0.0.0.0/udp/31001/quic-v1}
       - P2P_ENABLE_MDNS=${P2P_ENABLE_MDNS:-true}
       - P2P_MDNS_SERVICE_TAG=${P2P_MDNS_SERVICE_TAG:-stardome-p2p-v1}
       - P2P_ENABLE_DHT=${P2P_ENABLE_DHT:-true}
@@ -21,7 +21,7 @@ services:
     volumes:
       - p2p_data:/data
     healthcheck:
-      test: ["CMD-SHELL", 'port="$${P2P_API_PORT:-8089}"; curl -sf "http://127.0.0.1:$${port}/health" || exit 1']
+      test: ["CMD-SHELL", 'port="$${P2P_API_PORT:-30089}"; curl -sf "http://127.0.0.1:$${port}/health" || exit 1']
       interval: 15s
       timeout: 5s
       retries: 3
