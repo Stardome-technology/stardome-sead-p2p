@@ -136,14 +136,20 @@ config prevents it from starting, use this bootstrap procedure:
 P2P_BOOTSTRAP_PEERS=/ip4/<LAN_IP>/tcp/31001/p2p/<PEER_ID>,/ip4/<MESH_IP>/tcp/31001/p2p/<PEER_ID>
 ```
 
+> **⚠️ Public port convention:** The published ports `30089` (HTTP API) and
+> `31001` (libp2p swarm TCP+QUIC) are **standardized across all public
+> deployments** and must not be changed in this compose file. If you need
+> different ports, override them via environment variables or maintain your
+> own copy of the compose file.
+
 ## Configuration
 
 Create a `.env` file in this directory to override defaults:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `P2P_API_PORT` | `30089` | HTTP API port |
-| `P2P_LISTEN_ADDRS` | `/ip4/0.0.0.0/tcp/31001,/ip4/0.0.0.0/udp/31001/quic-v1` | libp2p listen multiaddrs |
+| `P2P_API_PORT` | `30089` | **Public** — HTTP API port |
+| `P2P_LISTEN_ADDRS` | `/ip4/0.0.0.0/tcp/31001,/ip4/0.0.0.0/udp/31001/quic-v1` | **Public** — libp2p listen multiaddrs |
 | `P2P_ENABLE_MDNS` | `true` | Enable mDNS peer discovery |
 | `P2P_MDNS_SERVICE_TAG` | `stardome-p2p-v1` | mDNS service tag |
 | `P2P_ENABLE_DHT` | `true` | Enable Kademlia DHT |
