@@ -45,7 +45,7 @@ docker compose -f docker-compose.remote.yml pull
 docker compose -f docker-compose.remote.yml up -d
 
 # Verify
-curl http://localhost:8089/health
+curl http://localhost:30089/health
 ```
 
 > **Why host networking?** The container uses `network_mode: host` so that mDNS
@@ -69,7 +69,7 @@ bridge through), configure a DHT bootstrap peer via `.env`:
 # Create .env with any reachable peer as bootstrap
 # Get the peer ID from its /health endpoint first
 # ⚠️ Replace <IP> and <PEER_ID> with actual values!
-echo 'P2P_BOOTSTRAP_PEERS=/ip4/<IP>/tcp/4001/p2p/<PEER_ID>' >> .env
+echo 'P2P_BOOTSTRAP_PEERS=/ip4/<IP>/tcp/31001/p2p/<PEER_ID>' >> .env
 
 # Restart to pick up config
 docker compose -f docker-compose.remote.yml down
