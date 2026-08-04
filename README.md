@@ -55,6 +55,20 @@ curl http://localhost:30089/health
 > The container binds ports directly on the host's IPs; no `-p` port mapping is
 > needed.
 
+## Public ports to open
+
+For the p2p sidecar to work across nodes, open these ports on the host firewall
+(and any cloud security group):
+
+- **`30089/tcp`** — HTTP API (`/health`, `/peers`, `/events/{topic}`, `/metrics`)
+- **`31001/tcp`** — libp2p swarm (TCP)
+- **`31001/udp`** — libp2p swarm (QUIC)
+
+These are the **public** ports standardized across all deployments. The HTTP API
+port is what other services use to publish/subscribe; the swarm ports are what
+peers use to connect to each other. If you only need one node to reach others
+(not be reached), you can restrict inbound `31001` to known peer IPs.
+
 ### Multi-node setup
 
 On the same LAN, mDNS auto-discovers all peers within seconds — no configuration
