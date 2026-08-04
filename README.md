@@ -45,7 +45,7 @@ docker compose -f docker-compose.remote.yml pull
 docker compose -f docker-compose.remote.yml up -d
 
 # Verify
-curl http://localhost:8089/health
+curl http://localhost:30089/health
 ```
 
 > **Why host networking?** The container uses `network_mode: host` so that mDNS
@@ -54,6 +54,20 @@ curl http://localhost:8089/health
 > lightweight daemon with no secrets or TLS, making host networking a safe choice.
 > The container binds ports directly on the host's IPs; no `-p` port mapping is
 > needed.
+
+## Public ports to open
+
+For the p2p sidecar to work across nodes, open these ports on the host firewall
+(and any cloud security group):
+
+- **`30089/tcp`** — HTTP API (`/health`, `/peers`, `/events/{topic}`, `/metrics`)
+- **`31001/tcp`** — libp2p swarm (TCP)
+- **`31001/udp`** — libp2p swarm (QUIC)
+
+These are the **public** ports standardized across all deployments. The HTTP API
+port is what other services use to publish/subscribe; the swarm ports are what
+peers use to connect to each other. If you only need one node to reach others
+(not be reached), you can restrict inbound `31001` to known peer IPs.
 
 ### Multi-node setup
 
@@ -69,7 +83,7 @@ bridge through), configure a DHT bootstrap peer via `.env`:
 # Create .env with any reachable peer as bootstrap
 # Get the peer ID from its /health endpoint first
 # ⚠️ Replace <IP> and <PEER_ID> with actual values!
-echo 'P2P_BOOTSTRAP_PEERS=/ip4/<IP>/tcp/4001/p2p/<PEER_ID>' >> .env
+echo 'P2P_BOOTSTRAP_PEERS=/ip4/<IP>/tcp/31001/p2p/<PEER_ID>' >> .env
 
 # Restart to pick up config
 docker compose -f docker-compose.remote.yml down
